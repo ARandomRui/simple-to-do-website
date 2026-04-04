@@ -31,6 +31,14 @@
     var btnEventSave = document.getElementById('btn-event-save');
     var btnEventClose = document.getElementById('btn-event-modal-close');
 
+    // Details modal DOM
+    var detailsOverlay = document.getElementById('event-details-overlay');
+    var detailsType = document.getElementById('details-type');
+    var detailsTitle = document.getElementById('details-title');
+    var detailsDate = document.getElementById('details-date');
+    var detailsNotes = document.getElementById('details-notes');
+    var btnDetailsClose = document.getElementById('btn-details-modal-close');
+
     // --- State ---
     var currentYear;
     var currentMonth; // 0-indexed
@@ -262,13 +270,40 @@
         btnDel.className = 'btn-delete-event';
         btnDel.title = 'Delete event';
         btnDel.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-        btnDel.addEventListener('click', function () {
+        btnDel.addEventListener('click', function (e) {
+            e.stopPropagation(); // prevent opening details
             deleteEvent(ev.id);
         });
 
         item.appendChild(badge);
         item.appendChild(info);
         item.appendChild(btnDel);
+
+        // Click to view details
+        item.addEventListener('click', function () {
+            detailsTitle.textContent = ev.title;
+            detailsDate.textContent = formatPanelDate(ev.date) + (ev.yearlyRepeat ? ' (Yearly)' : '');
+            
+            var types = { event: 'Event', task: 'Task', yearly: 'Yearly Repeat' };
+            var typeStr = types[ev.type] || 'Event';
+            detailsType.textContent = typeStr;
+            // Update badge color
+            detailsType.className = 'details-badge badge-' + ev.type;
+
+            if (ev.notes) {
+                detailsNotes.textContent = ev.notes;
+                detailsNotes.classList.remove('empty-notes');
+            } else {
+                detailsNotes.textContent = 'No notes provided.';
+                detailsNotes.classList.add('empty-notes');
+            }
+
+            detailsOverlay.classList.remove('hidden');
+        });
+
+        // Add cursor pointer hint
+        item.style.cursor = 'pointer';
+
         return item;
     }
 
@@ -364,9 +399,23 @@
     eventOverlay.addEventListener('click', function (e) {
         if (e.target === eventOverlay) closeEventModal();
     });
+
+    // Details modal listeners
+    btnDetailsClose.addEventListener('click', function () {
+        detailsOverlay.classList.add('hidden');
+    });
+    detailsOverlay.addEventListener('click', function (e) {
+        if (e.target === detailsOverlay) detailsOverlay.classList.add('hidden');
+    });
+
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && !eventOverlay.classList.contains('hidden')) {
-            closeEventModal();
+        if (e.key === 'Escape') {
+            if (!eventOverlay.classList.contains('hidden')) {
+                closeEventModal();
+            }
+            if (!detailsOverlay.classList.contains('hidden')) {
+                detailsOverlay.classList.add('hidden');
+            }
         }
     });
 

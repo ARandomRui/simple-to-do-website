@@ -1017,6 +1017,79 @@ select.event-input option {
     color: var(--text-primary);
 }
 
+/* ===== Event Details Modal ===== */
+.event-details-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.details-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.details-badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.details-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+}
+
+.details-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    background: rgba(255,255,255,0.03);
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+}
+
+.details-meta svg {
+    color: var(--accent);
+}
+
+.details-notes-section h4 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin: 0 0 0.5rem 0;
+}
+
+.details-notes-text {
+    font-size: 0.95rem;
+    color: var(--text);
+    line-height: 1.5;
+    background: rgba(0,0,0,0.2);
+    padding: 0.75rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.05);
+    white-space: pre-wrap;
+    margin: 0;
+}
+
+.details-notes-text.empty-notes {
+    color: var(--text-muted);
+    font-style: italic;
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
 /* ===== Alarm Layout ===== */
 .alarm-layout {
     max-width: 600px;
