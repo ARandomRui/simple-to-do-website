@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A flexible multi-list to-do application with task details and notes.">
-    <title>To-Do Lists</title>
+    <meta name="description" content="A flexible multi-list to-do application with calendar, task details and notes.">
+    <title>Kit's Tools</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -13,7 +13,23 @@
 <body>
 
     <header id="app-header">
-        <h1>My Lists</h1>
+        <h1>Kit's Tools</h1>
+        <!-- Tab Navigation -->
+        <nav id="tab-bar">
+            <button class="tab-btn active" data-tab="lists">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                Lists
+            </button>
+            <button class="tab-btn" data-tab="calendar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Calendar
+                <span id="cal-ping" class="tab-ping hidden">!</span>
+            </button>
+            <button class="tab-btn" data-tab="alarm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                Alarm
+            </button>
+        </nav>
         <button id="btn-new-list" title="Create a new list">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -23,9 +39,64 @@
         </button>
     </header>
 
-    <main id="list-container"></main>
+    <!-- ===== Lists View ===== -->
+    <section id="lists-view" class="view active-view">
+        <main id="list-container"></main>
+    </section>
 
-    <!-- Task Detail Modal -->
+    <!-- ===== Calendar View ===== -->
+    <section id="calendar-view" class="view">
+        <div class="cal-layout">
+            <div class="cal-main">
+                <!-- Month Navigation -->
+                <div class="cal-nav">
+                    <button id="btn-cal-prev" class="btn-icon" title="Previous month">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    </button>
+                    <h2 id="cal-month-title"></h2>
+                    <button id="btn-cal-next" class="btn-icon" title="Next month">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                    <button id="btn-cal-today" class="btn-today" title="Go to today">Today</button>
+                </div>
+                <!-- Weekday Headers -->
+                <div class="cal-weekdays">
+                    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                </div>
+                <!-- Day Grid -->
+                <div id="cal-grid"></div>
+            </div>
+            <!-- Day Detail Panel -->
+            <aside id="cal-day-panel" class="cal-panel">
+                <div class="panel-header">
+                    <h3 id="panel-date-title"></h3>
+                    <button id="btn-add-event" class="btn-add-event" title="Add event">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add
+                    </button>
+                </div>
+                <div id="panel-events-list" class="panel-events"></div>
+                <div id="panel-empty" class="panel-empty">No events for this day</div>
+            </aside>
+        </div>
+    </section>
+
+    <!-- ===== Alarm View ===== -->
+    <section id="alarm-view" class="view">
+        <div class="alarm-layout">
+            <div class="alarm-header-bar">
+                <h2>Alarms</h2>
+                <button id="btn-add-alarm" class="btn-add-event" title="Add alarm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Alarm
+                </button>
+            </div>
+            <div id="alarm-list" class="alarm-list"></div>
+            <div id="alarm-empty" class="panel-empty">No alarms set</div>
+        </div>
+    </section>
+
+    <!-- ===== Task Detail Modal ===== -->
     <div id="task-modal-overlay" class="modal-overlay hidden">
         <div id="task-modal" class="modal">
             <div class="modal-header">
@@ -45,12 +116,142 @@
         </div>
     </div>
 
+    <!-- ===== Event Creation Modal ===== -->
+    <div id="event-modal-overlay" class="modal-overlay hidden">
+        <div id="event-modal" class="modal">
+            <div class="modal-header">
+                <h2 id="event-modal-title">New Event</h2>
+                <button id="btn-event-modal-close" class="btn-icon" title="Close">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="event-form">
+                <label for="event-title-input" class="modal-label">Title</label>
+                <input type="text" id="event-title-input" class="event-input" placeholder="Event title…">
+
+                <label for="event-date-input" class="modal-label">Date</label>
+                <input type="date" id="event-date-input" class="event-input">
+
+                <label for="event-type-select" class="modal-label">Type</label>
+                <select id="event-type-select" class="event-input">
+                    <option value="event">Event</option>
+                    <option value="task">Task</option>
+                    <option value="yearly">Yearly (Repeats)</option>
+                </select>
+
+                <label for="event-notes-input" class="modal-label">Notes (optional)</label>
+                <textarea id="event-notes-input" class="event-input event-textarea" placeholder="Add notes…"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-event-save" class="btn-save">Save Event</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Alarm Creation Modal ===== -->
+    <div id="alarm-modal-overlay" class="modal-overlay hidden">
+        <div id="alarm-modal" class="modal">
+            <div class="modal-header">
+                <h2>New Alarm</h2>
+                <button id="btn-alarm-modal-close" class="btn-icon" title="Close">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="event-form">
+                <label for="alarm-type-select" class="modal-label">Type</label>
+                <select id="alarm-type-select" class="event-input">
+                    <option value="time">Time Alarm</option>
+                    <option value="countdown">Countdown Timer</option>
+                </select>
+
+                <!-- Time alarm input — scrollable fields -->
+                <div id="alarm-time-group">
+                    <label class="modal-label">Time</label>
+                    <div class="countdown-inputs">
+                        <div class="countdown-field">
+                            <input type="number" id="alarm-hour" class="event-input countdown-num scroll-wheel" min="1" max="12" value="12">
+                            <span class="countdown-unit">hour</span>
+                        </div>
+                        <div class="countdown-field">
+                            <input type="number" id="alarm-min" class="event-input countdown-num scroll-wheel" min="0" max="59" value="0">
+                            <span class="countdown-unit">min</span>
+                        </div>
+                        <div class="countdown-field">
+                            <select id="alarm-period" class="event-input countdown-num scroll-wheel period-select">
+                                <option value="AM">AM</option>
+                                <option value="PM">PM</option>
+                            </select>
+                            <span class="countdown-unit">&nbsp;</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Countdown inputs -->
+                <div id="alarm-countdown-group" style="display:none;">
+                    <label class="modal-label">Duration</label>
+                    <div class="countdown-inputs">
+                        <div class="countdown-field">
+                            <input type="number" id="alarm-hours" class="event-input countdown-num" min="0" max="99" value="0">
+                            <span class="countdown-unit">hrs</span>
+                        </div>
+                        <div class="countdown-field">
+                            <input type="number" id="alarm-minutes" class="event-input countdown-num" min="0" max="59" value="5">
+                            <span class="countdown-unit">min</span>
+                        </div>
+                        <div class="countdown-field">
+                            <input type="number" id="alarm-seconds" class="event-input countdown-num" min="0" max="59" value="0">
+                            <span class="countdown-unit">sec</span>
+                        </div>
+                    </div>
+                </div>
+
+                <label for="alarm-label-input" class="modal-label">Label</label>
+                <input type="text" id="alarm-label-input" class="event-input" placeholder="Wake up, Meeting…">
+
+                <label class="modal-label">Sound File (optional)</label>
+                <div class="sound-upload-wrapper">
+                    <input type="file" id="alarm-sound-input" accept="audio/*" class="sound-file-input">
+                    <label for="alarm-sound-input" class="sound-upload-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <span id="sound-file-name">Default tone (or upload custom)</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-alarm-save" class="btn-save">Save Alarm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Alarm Ringing Overlay ===== -->
+    <div id="alarm-ring-overlay" class="ring-overlay hidden">
+        <div class="ring-card">
+            <div class="ring-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <h2 id="ring-label">Alarm!</h2>
+            <p id="ring-time"></p>
+            <div class="ring-actions">
+                <button id="btn-snooze" class="btn-snooze">Snooze 5 min</button>
+                <button id="btn-dismiss" class="btn-dismiss">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts loaded in dependency order -->
     <script src="js/storageManager.js"></script>
     <script src="js/layoutManager.js"></script>
     <script src="js/modalManager.js"></script>
     <script src="js/taskManager.js"></script>
     <script src="js/listManager.js"></script>
+    <script src="js/calendarManager.js"></script>
+    <script src="js/alarmManager.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
