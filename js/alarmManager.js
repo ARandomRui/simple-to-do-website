@@ -50,6 +50,7 @@
     var pendingSoundName = '';
     var snoozeTimeoutId = null;
     var lastTriggeredKey = '';
+    var persistCounter = 0; // throttle localStorage writes
 
     // --- Helpers ---
     function generateId() {
@@ -75,6 +76,7 @@
 
     /** Format seconds into 'Xh Ym Zs' string. */
     function formatCountdown(totalSeconds) {
+        totalSeconds = Math.max(0, Math.ceil(totalSeconds));
         if (totalSeconds <= 0) return '0s';
         var h = Math.floor(totalSeconds / 3600);
         var m = Math.floor((totalSeconds % 3600) / 60);
@@ -164,7 +166,10 @@
         var timeEl = document.createElement('div');
         timeEl.className = 'alarm-time';
         if (alarm.type === 'countdown') {
-            timeEl.textContent = formatCountdown(alarm.remainingSeconds);
+            var remaining = alarm.endTimestamp
+                ? Math.max(0, Math.ceil((alarm.endTimestamp - Date.now()) / 1000))
+                : 0;
+            timeEl.textContent = formatCountdown(remaining);
             timeEl.dataset.countdownId = alarm.id;
         } else {
             timeEl.textContent = formatTime12h(alarm.time);
@@ -202,9 +207,9 @@
         checkbox.addEventListener('change', function () {
             alarm.enabled = checkbox.checked;
             card.classList.toggle('disabled', !alarm.enabled);
-            // Reset countdown when re-enabled
-            if (alarm.type === 'countdown' && alarm.enabled && alarm.remainingSeconds <= 0) {
-                alarm.remainingSeconds = alarm.totalSeconds;
+            // Reset countdown when re-enabled by setting a new end timestamp
+            if (alarm.type === 'countdown' && alarm.enabled) {
+                alarm.endTimestamp = Date.now() + alarm.totalSeconds * 1000;
             }
             persist();
             renderAlarms();
@@ -238,7 +243,10 @@
             if (alarm.type !== 'countdown' || !alarm.enabled) return;
             var el = alarmListEl.querySelector('[data-countdown-id="' + alarm.id + '"]');
             if (el) {
-                el.textContent = formatCountdown(alarm.remainingSeconds);
+                var remaining = alarm.endTimestamp
+                    ? Math.max(0, Math.ceil((alarm.endTimestamp - Date.now()) / 1000))
+                    : 0;
+                el.textContent = formatCountdown(remaining);
             }
         });
     }
@@ -325,7 +333,7 @@
                 id: generateId(),
                 type: 'countdown',
                 totalSeconds: total,
-                remainingSeconds: total,
+                endTimestamp: Date.now() + total * 1000,
                 label: labelInput.value.trim() || 'Timer',
                 soundDataUrl: pendingSoundData || '',
                 soundName: pendingSoundName || '',
@@ -343,33 +351,43 @@
 
     function checkAlarms() {
         var now = currentTimeStr();
+        var currentMs = Date.now();
 
         alarms.forEach(function (alarm) {
             if (!alarm.enabled) return;
 
             if (alarm.type === 'time') {
-                // Time-based: check HH:MM match
-                var key = alarm.id + '-' + now;
+                // Convert alarm HH:MM to today's timestamp
+                var parts = alarm.time.split(':');
+                var alarmDate = new Date();
+                alarmDate.setHours(parseInt(parts[0], 10), parseInt(parts[1], 10), 0, 0);
+                var alarmMs = alarmDate.getTime();
+
+                // Trigger if we've reached or passed the alarm time (within a 60s window)
+                var key = alarm.id + '-' + alarm.time;
                 if (key === lastTriggeredKey) return;
-                if (alarm.time === now) {
+                if (currentMs >= alarmMs && currentMs < alarmMs + 60000) {
                     lastTriggeredKey = key;
                     triggerAlarm(alarm);
                 }
             } else if (alarm.type === 'countdown') {
-                // Countdown: decrement remaining seconds each tick
-                if (alarm.remainingSeconds > 0) {
-                    alarm.remainingSeconds--;
-                    if (alarm.remainingSeconds <= 0) {
-                        triggerAlarm(alarm);
-                        alarm.enabled = false; // auto-disable after firing
-                    }
+                // Countdown: check if we've passed the end timestamp
+                if (alarm.endTimestamp && currentMs >= alarm.endTimestamp) {
+                    triggerAlarm(alarm);
+                    alarm.enabled = false;
+                    alarm.endTimestamp = null;
                 }
             }
         });
 
-        // Update countdown displays and persist countdown changes
         updateCountdownDisplays();
-        persist();
+
+        // Throttle localStorage writes to every ~10 seconds
+        persistCounter++;
+        if (persistCounter >= 10) {
+            persistCounter = 0;
+            persist();
+        }
     }
 
     function triggerAlarm(alarm) {
